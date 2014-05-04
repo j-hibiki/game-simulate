@@ -1,23 +1,13 @@
 =begin
 
+変数の説明
+tpC typeC
 
-ダメージ計算がまだちゃんとしてない。
 相手が技を選ぶアルゴリズムができてない。
 
 ダメージ計算式
 （（攻撃側のレベル × 2 ÷ 5 ＋ 2）× 技の威力 × 攻撃側の能力値 ÷
  防御側の能力値 ÷ 50 ＋ 2）×（85～100）÷ 100 
- 
-■つばさでうつ
-物理
-飛行
-60/100
- 
-■エアスラッシュ
-特殊
-飛行
-75/95
-3割ひるみ
 
 --所持ポケモン--
 カモネギLv100（6Vで努力値無振り）
@@ -107,6 +97,25 @@ uindiH = Uindi[2]
 fudinH = Fudin[2]
 kamexH = Kamex[2]
 
+#ダメージ計算の関数
+def getDamage(atL,wazaIryoku,atA,dfB,typeComp1,typeComp2,typeMach1,typeMach2)
+    damage = ((atL * 2/5 + 2) * wazaIryoku * atA / dfB / 50 + 2) * (85 + rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
+    damage = damage.floor
+	return damage
+end
+
+#HP計算の関数
+def getHP(syuzokuti, kotaiti,  doryokuti, lv)
+	status = (syuzokuti * 2 + kotaiti + doryokuti/4) * lv/100 + 10 + lv
+	return status
+end
+
+#ABCDS計算の関数
+def getABCDS(syuzokuti, kotaiti,  doryokuti, lv)
+	status = (syuzokuti * 2 + kotaiti + doryokuti/4) * lv/100 + 5
+	return status
+end
+
 #戦闘開始
 print("チャンピオンのシゲルが勝負をしかけてきた。\n")
 print("チャンピオンのシゲルは",Pijotto[0],"を繰り出した。\n")
@@ -124,43 +133,51 @@ while pijottoH > 0 do
 	print("1つばさでうつ,2エアスラッシュ,3リーフブレード,4ねっぷう,5すごいきずぐすり,6なんでもなおし")
 	myAttack = gets.to_i
 	
-	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Pijotto[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+	if(myAttack == 1)	#つばさでうつ
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Pijotto[5]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Pijotto[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Pijotto[7]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル		
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 1	#くさ→ノーマル
-		typeComp2 = 0.5	#くさ→ひこう
-		typeMach1 = 1	#くさ≠ひこう
-		typeMach2 = 1	#くさ≠ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Pijotto[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Pijotto[5]
+		tpC1 = 1	#くさ→ノーマル
+		tpC2 = 0.5	#くさ→ひこう
+		tpM1 = 1	#くさ≠ひこう
+		tpM2 = 1	#くさ≠ノーマル		
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 1	#ほのお→ノーマル
-		typeComp2 = 1	#ほのお→ひこう
-		typeMach1 = 1	#ほのお≠ひこう
-		typeMach2 = 1	#ほのお≠ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Pijotto[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
-		waza = Neppuu[0]
-		
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Pijotto[7]
+		tpC1 = 1	#ほのお→ノーマル
+		tpC2 = 1	#ほのお→ひこう
+		tpM1 = 1	#ほのお≠ひこう
+		tpM2 = 1	#ほのお≠ノーマル		
+		waza = Neppuu[0]		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Pijotto[0],"に",damage,"のダメージ\n")
 		pijottoH -= damage
 		
@@ -170,42 +187,51 @@ while pijottoH > 0 do
 	opAttack = rand(4)+1
 	
 	if(opAttack == 1)#つばさでうつ
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Pijotto[1] * 2 / 5 + 2) * Tsubasa2[1] * Pijotto[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Pijotto[1]
+		skP = Tsubasa2[1]
+		atA = Pijotto[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル
 		waza = Tsubasa2[0]
 		
 	elsif(opAttack == 2)#ふきとばし
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Pijotto[1] * 2 / 5 + 2) * Fuki[1] * Pijotto[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Pijotto[1]
+		skP = Fuki[1]
+		atA = Pijotto[6]
+		dfB = Kamonegi[7]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル
 		waza = Fuki[0]
 		
 	elsif(opAttack == 3)#オウムがえし
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Pijotto[1] * 2 / 5 + 2) * Oumu[1] * Pijotto[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Pijotto[1]
+		skP = Oumu[1]
+		atA = Pijotto[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル		
 		waza = Oumu[0]
 		
 	elsif(opAttack == 4)#ゴッドバード
-		typeComp1 = 1	#ひこう→ノーマル
-		typeComp2 = 1	#ひこう→ひこう
-		typeMach1 = 1.5	#ひこう=ひこう
-		typeMach2 = 1	#ひこう≠ノーマル
-		damage = ((Pijotto[1] * 2 / 5 + 2) * Godbird[1] * Pijotto[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Pijotto[1]
+		skP = Godbird[1]
+		atA = Pijotto[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ひこう→ノーマル
+		tpC2 = 1	#ひこう→ひこう
+		tpM1 = 1.5	#ひこう=ひこう
+		tpM2 = 1	#ひこう≠ノーマル		
 		waza = Godbird[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Pijotto[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		kamonegiH -= damage
 
@@ -230,42 +256,51 @@ while saidonH > 0 do
 	myAttack = gets.to_i
 	
 	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 0.5	#ひこう→いわ
-		typeComp2 = 1	#ひこう→じめん
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Saidon[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Saidon[5]
+		tpC1 = 0.5	#ひこう→いわ
+		tpC2 = 1	#ひこう→じめん
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 0.5	#ひこう→いわ
-		typeComp2 = 1	#ひこう→じめん
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Saidon[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Saidon[7]
+		tpC1 = 0.5	#ひこう→いわ
+		tpC2 = 1	#ひこう→じめん
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 2	#くさ→いわ
-		typeComp2 = 2	#くさ→じめん
-		typeMach1 = 1	#くさ:ひこう
-		typeMach2 = 1	#くさ:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Saidon[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Saidon[5]
+		tpC1 = 2	#くさ→いわ
+		tpC2 = 2	#くさ→じめん
+		tpM1 = 1	#くさ:ひこう
+		tpM2 = 1	#くさ:ノーマル
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 0.5	#ほのお→いわ
-		typeComp2 = 1	#ほのお→じめん
-		typeMach1 = 1	#ほのお:ひこう
-		typeMach2 = 1	#ほのお:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Saidon[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Saidon[7]
+		tpC1 = 0.5	#ほのお→いわ
+		tpC2 = 1	#ほのお→じめん
+		tpM1 = 1	#ほのお:ひこう
+		tpM2 = 1	#ほのお:ノーマル
 		waza = Neppuu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Saidon[0],"に",damage,"のダメージ\n")
 		saidonH -= damage
 		
@@ -275,42 +310,51 @@ while saidonH > 0 do
 	opAttack = rand(4)+1
 	
 	if(opAttack == 1)#しっぽをふる
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:いわ
-		typeMach2 = 1	#ノーマル:じめん
-		damage = ((Saidon[1] * 2 / 5 + 2) * Tsubasa2[1] * Saidon[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Saidon[1]
+		skP = Shippo[1]
+		atA = Saidon[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:いわ
+		tpM2 = 1	#ノーマル:じめん
 		waza = Shippo[0]
 		
 	elsif(opAttack == 2)#にらみつける
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:いわ
-		typeMach2 = 1	#ノーマル:じめん
-		damage = ((Saidon[1] * 2 / 5 + 2) * Fuki[1] * Saidon[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Saidon[1]
+		skP = Nirami[1]
+		atA = Saidon[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:いわ
+		tpM2 = 1	#ノーマル:じめん
 		waza = Nirami[0]
 		
 	elsif(opAttack == 3)#つのドリル
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:いわ
-		typeMach2 = 1	#ノーマル:じめん
-		damage = ((Saidon[1] * 2 / 5 + 2) * Oumu[1] * Saidon[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Saidon[1]
+		skP = Tsuno[1]
+		atA = Saidon[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:いわ
+		tpM2 = 1	#ノーマル:じめん
 		waza = Tsuno[0]
 		
 	elsif(opAttack == 4)#みだれづき
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:いわ
-		typeMach2 = 1	#ノーマル:じめん
-		damage = ((Saidon[1] * 2 / 5 + 2) * Godbird[1] * Saidon[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Saidon[1]
+		skP = Midare[1]
+		atA = Saidon[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:いわ
+		tpM2 = 1	#ノーマル:じめん
 		waza = Midare[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Saidon[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		kamonegiH -= damage
 
@@ -333,42 +377,51 @@ while nassiH > 0 do
 	myAttack = gets.to_i
 	
 	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 2	#ひこう→くさ
-		typeComp2 = 1	#ひこう→エスパー
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Nassi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Nassi[5]
+		tpC1 = 2	#ひこう→くさ
+		tpC2 = 1	#ひこう→エスパー
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 2	#ひこう→くさ
-		typeComp2 = 1	#ひこう→エスパー
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Nassi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Nassi[7]
+		tpC1 = 2	#ひこう→くさ
+		tpC2 = 1	#ひこう→エスパー
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 0.5	#くさ→くさ
-		typeComp2 = 1	#くさ→エスパー
-		typeMach1 = 1	#くさ:ひこう
-		typeMach2 = 1	#くさ:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Nassi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Nassi[5]
+		tpC1 = 0.5	#くさ→くさ
+		tpC2 = 1	#くさ→エスパー
+		tpM1 = 1	#くさ:ひこう
+		tpM2 = 1	#くさ:ノーマル
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 2	#ほのお→くさ
-		typeComp2 = 1	#ほのお→エスパー
-		typeMach1 = 1	#ほのお:ひこう
-		typeMach2 = 1	#ほのお:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Nassi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Nassi[7]
+		tpC1 = 2	#ほのお→くさ
+		tpC2 = 1	#ほのお→エスパー
+		tpM1 = 1	#ほのお:ひこう
+		tpM2 = 1	#ほのお:ノーマル
 		waza = Neppuu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Nassi[0],"に",damage,"のダメージ\n")
 		nassiH -= damage
 		
@@ -378,33 +431,40 @@ while nassiH > 0 do
 	opAttack = rand(3)+1
 	
 	if(opAttack == 1)#ふみつけ
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:くさ
-		typeMach2 = 1	#ノーマル:エスパー
-		damage = ((Nassi[1] * 2 / 5 + 2) * Fumi[1] * Nassi[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Nassi[1]
+		skP = Fumi[1]
+		atA = Nassi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:くさ
+		tpM2 = 1	#ノーマル:エスパー
 		waza = Fumi[0]
 		
 	elsif(opAttack == 2)#たまなげ
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:くさ
-		typeMach2 = 1	#ノーマル:エスパー
-		damage = ((Nassi[1] * 2 / 5 + 2) * Tama[1] * Nassi[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Nassi[1]
+		skP = Tama[1]
+		atA = Nassi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:くさ
+		tpM2 = 1	#ノーマル:エスパー
 		waza = Tama[0]
 		
 	elsif(opAttack == 3)#さいみんじゅつ
-		typeComp1 = 1	#エスパー→ノーマル
-		typeComp2 = 1	#エスパー→ひこう
-		typeMach1 = 1	#エスパー:くさ
-		typeMach2 = 1	#エスパー:エスパー
-		damage = ((Nassi[1] * 2 / 5 + 2) * Saimin[1] * Nassi[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Nassi[1]
+		skP = Saimin[1]
+		atA = Nassi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#エスパー→ノーマル
+		tpC2 = 1	#エスパー→ひこう
+		tpM1 = 1	#エスパー:くさ
+		tpM2 = 1	#エスパー:エスパー
 		waza = Saimin[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Nassi[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		nassiH -= damage
 
@@ -429,42 +489,51 @@ while uindiH > 0 do
 	myAttack = gets.to_i
 	
 	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 1	#ひこう→ほのお
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Uindi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Uindi[5]
+		tpC1 = 1	#ひこう→ほのお
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 1	#ひこう→ほのお
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Uindi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Uindi[7]
+		tpC1 = 1	#ひこう→ほのお
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 0.5	#くさ→ほのお
-		typeComp2 = 1	#くさ→なし
-		typeMach1 = 1	#くさ:ひこう
-		typeMach2 = 1	#くさ:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Uindi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Uindi[5]
+		tpC1 = 0.5	#くさ→ほのお
+		tpC2 = 1	#くさ→なし
+		tpM1 = 1	#くさ:ひこう
+		tpM2 = 1	#くさ:ノーマル
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 0.5	#ほのお→ほのお
-		typeComp2 = 1	#ほのお→なし
-		typeMach1 = 1	#ほのお:ひこう
-		typeMach2 = 1	#ほのお:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Uindi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Uindi[7]
+		tpC1 = 0.5	#ほのお→ほのお
+		tpC2 = 1	#ほのお→なし
+		tpM1 = 1	#ほのお:ひこう
+		tpM2 = 1	#ほのお:ノーマル
 		waza = Neppuu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Uindi[0],"に",damage,"のダメージ\n")
 		uindiH -= damage
 		
@@ -474,42 +543,51 @@ while uindiH > 0 do
 	opAttack = rand(3)+1
 	
 	if(opAttack == 1)#ほえる
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:ほのお
-		typeMach2 = 1	#ノーマル:なし
-		damage = ((Uindi[1] * 2 / 5 + 2) * Hoeru[1] * Uindi[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Uindi[1]
+		skP = Hoeru[1]
+		atA = Uindi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:ほのお
+		tpM2 = 1	#ノーマル:なし
 		waza = Hoeru[0]
 		
 	elsif(opAttack == 2)#ひのこ
-		typeComp1 = 1	#ほのお→ノーマル
-		typeComp2 = 1	#ほのお→ひこう
-		typeMach1 = 1.5	#ほのお:ほのお
-		typeMach2 = 1	#ほのお:なし
-		damage = ((Uindi[1] * 2 / 5 + 2) * Hinoko[1] * Uindi[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Uindi[1]
+		skP = Hinoko[1]
+		atA = Uindi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ほのお→ノーマル
+		tpC2 = 1	#ほのお→ひこう
+		tpM1 = 1.5	#ほのお:ほのお
+		tpM2 = 1	#ほのお:なし
 		waza = Hinoko[0]
 		
 	elsif(opAttack == 3)#にらみつける
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:ほのお
-		typeMach2 = 1	#ノーマル:なし
-		damage = ((Uindi[1] * 2 / 5 + 2) * Nirami[1] * Uindi[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Uindi[1]
+		skP = Nirami[1]
+		atA = Uindi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:ほのお
+		tpM2 = 1	#ノーマル:なし
 		waza = Nirami[0]
 		
 	elsif(opAttack == 4)#とっしん
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:ほのお
-		typeMach2 = 1	#ノーマル:なし
-		damage = ((Uindi[1] * 2 / 5 + 2) * Toshin[1] * Uindi[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Uindi[1]
+		skP = Toshin[1]
+		atA = Uindi[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:ほのお
+		tpM2 = 1	#ノーマル:なし
 		waza = Toshin[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Uindi[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		uindiH -= damage
 
@@ -532,42 +610,51 @@ while fudinH > 0 do
 	myAttack = gets.to_i
 	
 	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 1	#ひこう→エスパー
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Fudin[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Fudin[5]
+		tpC1 = 1	#ひこう→エスパー
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 1	#ひこう→エスパー
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Fudin[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Fudin[7]
+		tpC1 = 1	#ひこう→エスパー
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 1	#くさ→エスパー
-		typeComp2 = 1	#くさ→なし
-		typeMach1 = 1	#くさ:ひこう
-		typeMach2 = 1	#くさ:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Fudin[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Fudin[5]
+		tpC1 = 1	#くさ→エスパー
+		tpC2 = 1	#くさ→なし
+		tpM1 = 1	#くさ:ひこう
+		tpM2 = 1	#くさ:ノーマル
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 1	#ほのお→エスパー
-		typeComp2 = 1	#ほのお→なし
-		typeMach1 = 1	#ほのお:ひこう
-		typeMach2 = 1	#ほのお:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Fudin[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Fudin[7]
+		tpC1 = 1	#ほのお→エスパー
+		tpC2 = 1	#ほのお→なし
+		tpM1 = 1	#ほのお:ひこう
+		tpMach2 = 1	#ほのお:ノーマル
 		waza = Neppuu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Fudin[0],"に",damage,"のダメージ\n")
 		fudinH -= damage
 		
@@ -577,42 +664,51 @@ while fudinH > 0 do
 	opAttack = rand(3)+1
 	
 	if(opAttack == 1)#サイコキネシス
-		typeComp1 = 1	#エスパー→ノーマル
-		typeComp2 = 1	#エスパー→ひこう
-		typeMach1 = 1.5	#エスパー:エスパー
-		typeMach2 = 1	#エスパー:なし
-		damage = ((Fudin[1] * 2 / 5 + 2) * Saiko[1] * Fudin[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Fudin[1]
+		skP = Saiko[1]
+		atA = Fudin[6]
+		dfB = Kamonegi[7]
+		tpC1 = 1	#エスパー→ノーマル
+		tpC2 = 1	#エスパー→ひこう
+		tpM1 = 1.5	#エスパー:エスパー
+		tpM2 = 1	#エスパー:なし
 		waza = Saiko[0]
 		
 	elsif(opAttack == 2)#サイケこうせん
-		typeComp1 = 1	#エスパー→ノーマル
-		typeComp2 = 1	#エスパー→ひこう
-		typeMach1 = 1.5	#エスパー:エスパー
-		typeMach2 = 1	#エスパー:なし
-		damage = ((Fudin[1] * 2 / 5 + 2) * Saike[1] * Fudin[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Fudin[1]
+		skP = Saike[1]
+		atA = Fudin[6]
+		dfB = Kamonegi[7]
+		tpC1 = 1	#エスパー→ノーマル
+		tpC2 = 1	#エスパー→ひこう
+		tpM1 = 1.5	#エスパー:エスパー
+		tpM2 = 1	#エスパー:なし
 		waza = Saike[0]
 		
 	elsif(opAttack == 3)#じこさいせい
-		typeComp1 = 1	#エスパー→ノーマル
-		typeComp2 = 1	#エスパー→ひこう
-		typeMach1 = 1.5	#エスパー:エスパー
-		typeMach2 = 1	#エスパー:なし
-		damage = ((Fudin[1] * 2 / 5 + 2) * Jiko[1] * Fudin[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Fudin[1]
+		skP = Jiko[1]
+		atA = Fudin[6]
+		dfB = Kamonegi[7]
+		tpC1 = 1	#エスパー→ノーマル
+		tpC2 = 1	#エスパー→ひこう
+		tpM1 = 1.5	#エスパー:エスパー
+		tpM2 = 1	#エスパー:なし
 		waza = Jiko[0]
 		
 	elsif(opAttack == 4)#リフレクター
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:エスパー
-		typeMach2 = 1	#ノーマル:なし
-		damage = ((Fudin[1] * 2 / 5 + 2) * Rifu[1] * Fudin[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Fudin[1]
+		skP = Rifu[1]
+		atA = Fudin[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:エスパー
+		tpM2 = 1	#ノーマル:なし
 		waza = Rifu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Fudin[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		kamonegiH -= damage
 
@@ -635,42 +731,51 @@ while kamexH > 0 do
 	myAttack = gets.to_i
 	
 	if(myAttack == 1)#つばさでうつ
-		typeComp1 = 1	#ひこう→エスパー
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Tsubasa[1] * Kamonegi[4] / Kamex[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Tsubasa[1]
+		atA = Kamonegi[4]
+		dfB = Kamex[5]
+		tpC1 = 1	#ひこう→エスパー
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Tsubasa[0]
 		
 	elsif(myAttack == 2)#エアスラッシュ
-		typeComp1 = 1	#ひこう→エスパー
-		typeComp2 = 1	#ひこう→なし
-		typeMach1 = 1.5	#ひこう:ひこう
-		typeMach2 = 1	#ひこう:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Easura[1] * Kamonegi[6] / Kamex[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Easura[1]
+		atA = Kamonegi[6]
+		dfB = Kamex[7]
+		tpC1 = 1	#ひこう→エスパー
+		tpC2 = 1	#ひこう→なし
+		tpM1 = 1.5	#ひこう:ひこう
+		tpM2 = 1	#ひこう:ノーマル
 		waza = Easura[0]
 		
 	elsif(myAttack == 3)#リーフブレード
-		typeComp1 = 1	#くさ→エスパー
-		typeComp2 = 1	#くさ→なし
-		typeMach1 = 1	#くさ:ひこう
-		typeMach2 = 1	#くさ:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * LeafBlade[1] * Kamonegi[4] / Kamex[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = LeafBlade[1]
+		atA = Kamonegi[4]
+		dfB = Kamex[5]
+		tpC1 = 1	#くさ→エスパー
+		tpC2 = 1	#くさ→なし
+		tpM1 = 1	#くさ:ひこう
+		tpM2 = 1	#くさ:ノーマル
 		waza = LeafBlade[0]
 		
 	elsif(myAttack == 4)#ねっぷう
-		typeComp1 = 1	#ほのお→エスパー
-		typeComp2 = 1	#ほのお→なし
-		typeMach1 = 1	#ほのお:ひこう
-		typeMach2 = 1	#ほのお:ノーマル
-		damage = ((Kamonegi[1] * 2 / 5 + 2) * Neppuu[1] * Kamonegi[6] / Kamex[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamonegi[1]
+		skP = Neppuu[1]
+		atA = Kamonegi[6]
+		dfB = Kamex[7]
+		tpC1 = 1	#ほのお→エスパー
+		tpC2 = 1	#ほのお→なし
+		tpM1 = 1	#ほのお:ひこう
+		tpM2 = 1	#ほのお:ノーマル
 		waza = Neppuu[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamonegi[0],"の",waza,"！",Kamex[0],"に",damage,"のダメージ\n")
 		kamexH -= damage
 		
@@ -680,42 +785,51 @@ while kamexH > 0 do
 	opAttack = rand(3)+1
 	
 	if(opAttack == 1)#ハイドロポンプ
-		typeComp1 = 1	#みず→ノーマル
-		typeComp2 = 1	#みず→ひこう
-		typeMach1 = 1.5	#みず:みず
-		typeMach2 = 1	#みず:なし
-		damage = ((Kamex[1] * 2 / 5 + 2) * Saiko[1] * Kamex[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamex[1]
+		skP = Haidoro[1]
+		atA = Kamex[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#みず→ノーマル
+		tpC2 = 1	#みず→ひこう
+		tpM1 = 1.5	#みず:みず
+		tpM2 = 1	#みず:なし
 		waza = Haidoro[0]
 		
 	elsif(opAttack == 2)#かみつく
-		typeComp1 = 1	#あく→ノーマル
-		typeComp2 = 1	#あく→ひこう
-		typeMach1 = 1	#あく:みず
-		typeMach2 = 1	#あく:なし
-		damage = ((Kamex[1] * 2 / 5 + 2) * Kamitsuku[1] * Kamex[6] / Kamonegi[7] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamex[1]
+		skP = Kamitsuku[1]
+		atA = Kamex[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#あく→ノーマル
+		tpC2 = 1	#あく→ひこう
+		tpM1 = 1	#あく:みず
+		tpM2 = 1	#あく:なし
 		waza = Kamitsuku[0]
 		
 	elsif(opAttack == 3)#ふぶき
-		typeComp1 = 1	#こおり→ノーマル
-		typeComp2 = 2	#こおり→ひこう
-		typeMach1 = 1	#こおり:みず
-		typeMach2 = 1	#こおり:なし
-		damage = ((Kamex[1] * 2 / 5 + 2) * Fubuki[1] * Kamex[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamex[1]
+		skP = Fubuki[1]
+		atA = Kamex[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#こおり→ノーマル
+		tpC2 = 2	#こおり→ひこう
+		tpM1 = 1	#こおり:みず
+		tpM2 = 1	#こおり:なし
 		waza = Fubuki[0]
 		
 	elsif(opAttack == 4)#からにこもる
-		typeComp1 = 1	#ノーマル→ノーマル
-		typeComp2 = 1	#ノーマル→ひこう
-		typeMach1 = 1	#ノーマル:みず
-		typeMach2 = 1	#ノーマル:なし
-		damage = ((Kamex[1] * 2 / 5 + 2) * Karani[1] * Kamex[4] / Kamonegi[5] / 50 + 2) * (85+rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
-		damage = damage.floor
+		atL = Kamex[1]
+		skP = Karani[1]
+		atA = Kamex[4]
+		dfB = Kamonegi[5]
+		tpC1 = 1	#ノーマル→ノーマル
+		tpC2 = 1	#ノーマル→ひこう
+		tpM1 = 1	#ノーマル:みず
+		tpM2 = 1	#ノーマル:なし
 		waza = Karani[0]
 		
 	end
+		damage = getDamage(atL,skP,atA,dfB,tpC1,tpC2,tpM1,tpM2)
 		print(Kamex[0],"の",waza,"！",Kamonegi[0],"に",damage,"のダメージ\n")
 		kamonegiH -= damage
 
@@ -725,3 +839,4 @@ print(Kamex[0],"を倒した\n\n")
 
 
 print("チャンピオンのシゲルとの勝負に勝った。\n\n")
+
