@@ -101,19 +101,19 @@ kamexH = Kamex[2]
 def getDamage(atL,wazaIryoku,atA,dfB,typeComp1,typeComp2,typeMach1,typeMach2)
     damage = ((atL * 2/5 + 2) * wazaIryoku * atA / dfB / 50 + 2) * (85 + rand(16)) / 100 * typeComp1 * typeComp2 * typeMach1 * typeMach2
     damage = damage.floor
-	return damage
+	  damage
 end
 
 #HP計算の関数
 def getHP(syuzokuti, kotaiti,  doryokuti, lv)
 	status = (syuzokuti * 2 + kotaiti + doryokuti/4) * lv/100 + 10 + lv
-	return status
+	status
 end
 
 #ABCDS計算の関数
 def getABCDS(syuzokuti, kotaiti,  doryokuti, lv)
 	status = (syuzokuti * 2 + kotaiti + doryokuti/4) * lv/100 + 5
-	return status
+	status
 end
 
 #戦闘開始
